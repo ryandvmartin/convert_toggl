@@ -12,7 +12,7 @@ def convert_toggl(toggl_export, csvoutfile):
         dfslice = df.loc[df['Start date'] == date]
         hours_worked = dfslice['Duration'].sum()
         tasks = ', '.join([task for task in set(dfslice['Description'])]).capitalize()
-        data.append([date, myname, tasks, hours_worked.total_seconds() / 3600])
+        data.append([date, myname, hours_worked.total_seconds() / 3600, tasks])
     hourtable = pd.DataFrame(data, columns=['Date', 'Employee', 'Hours', 'Description'])
     hourtable.to_csv(csvoutfile, index=False)
 
