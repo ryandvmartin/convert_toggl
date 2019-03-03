@@ -19,10 +19,11 @@ def convert_toggl(toggl_export, csvoutfile):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('toggl_file', type=str, help='The name of the toggl csv')
-    parser.add_argument('out_file', type=str, help='The output csv file')
+    parser.add_argument('toggle_export_csv', type=str, help='The name of the toggl csv')
+    parser.add_argument('processed_csv', nargs='?', type=str, default='out.csv',
+                        help='The output csv file')
     args = parser.parse_args()
-    convert_toggl(args.toggl_file, args.out_file)
+    convert_toggl(args.toggle_export_csv, args.processed_csv)
 
 
 if __name__ == '__main__':
