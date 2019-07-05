@@ -4,15 +4,25 @@ import argparse
 myname = 'Ryan Martin'
 
 
-def convert_merge_time_entries(df):
-    df['Duration'] = df['Duration'].apply(pd.Timedelta).dt.round('15min')
+def round_to_nearest_15(value):
+    """Round the value to the nearest 15 minutes, eg. 3:17 -> 3:15,  3:22 -> 3:25"""
+    step = pd.Timedelta('00:15:00')
+    return step * round(pd.Timedelta(value) / step)
+
+
+def convert_merge_time_entries(df: pd.DataFrame):
+    df['NotRounded'] = df['Duration'].copy().apply(pd.Timedelta)
+    df['Duration'] = df['Duration'].apply(round_to_nearest_15)
     data = []
     for date in sorted(set(df['Start date'])):
         dfslice = df.loc[df['Start date'] == date]
         hours_worked = dfslice['Duration'].sum()
+        unrounded_hours = dfslice['NotRounded'].sum()
         tasks = ', '.join([task for task in set(dfslice['Description'])]).capitalize()
-        data.append([date, myname, hours_worked.total_seconds() / 3600, tasks])
-    return pd.DataFrame(data, columns=['Date', 'Employee', 'Hours', 'Description'])
+        data.append([date, myname, hours_worked.total_seconds() / 3600,
+                     unrounded_hours.total_seconds() / 3600, tasks])
+    return pd.DataFrame(data, columns=['Date', 'Employee', 'Hours', 'Unrounded_hours',
+                                       'Description'])
 
 
 def convert_toggl_export(toggl_export, outfile):
