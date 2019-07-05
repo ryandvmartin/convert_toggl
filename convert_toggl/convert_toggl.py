@@ -11,13 +11,12 @@ def round_to_nearest_15(value):
 
 
 def convert_merge_time_entries(df: pd.DataFrame):
-    df['NotRounded'] = df['Duration'].copy().apply(pd.Timedelta)
-    df['Duration'] = df['Duration'].apply(round_to_nearest_15)
+    df['Duration'] = df['Duration'].apply(pd.Timedelta)
     data = []
     for date in sorted(set(df['Start date'])):
         dfslice = df.loc[df['Start date'] == date]
-        hours_worked = dfslice['Duration'].sum()
-        unrounded_hours = dfslice['NotRounded'].sum()
+        hours_worked = round_to_nearest_15(dfslice['Duration'].sum())
+        unrounded_hours = dfslice['Duration'].sum()
         tasks = ', '.join([task for task in set(dfslice['Description'])]).capitalize()
         data.append([date, myname, hours_worked.total_seconds() / 3600,
                      unrounded_hours.total_seconds() / 3600, tasks])
