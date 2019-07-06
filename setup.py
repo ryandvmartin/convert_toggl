@@ -1,5 +1,7 @@
 """
-SpatialCluster package (c) Ryan Martin 2018
+Convert Toggl (c) Ryan Martin 2019
+
+`pip install -e .` to get going
 """
 from setuptools import setup
 
@@ -15,7 +17,6 @@ if __name__ == '__main__':
           license='MIT / CCG',
           packages=['convert_toggl'],
           entry_points={
-              # `python setup.py develop` to test with a dev install
               'console_scripts': [
                   'convert_toggl=convert_toggl:main',
               ]
