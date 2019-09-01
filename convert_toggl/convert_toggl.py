@@ -1,3 +1,4 @@
+"""Convert toggle exports, optionally by project"""
 import pandas as pd
 import argparse
 
@@ -11,6 +12,7 @@ def round_to_nearest_15(value):
 
 
 def convert_merge_time_entries(df: pd.DataFrame):
+    """Get each time entry, merge ead day and round"""
     df['Duration'] = df['Duration'].apply(pd.Timedelta)
     data = []
     for date in sorted(set(df['Start date'])):
@@ -25,6 +27,7 @@ def convert_merge_time_entries(df: pd.DataFrame):
 
 
 def convert_toggl_export(toggl_export, outfile):
+    """Read through an exported toggle file and save by project"""
     df = pd.read_csv(toggl_export)
     if 'project' in [c.lower() for c in df.columns]:
         for projectid, subdf in list(df.groupby('Project')):
@@ -36,6 +39,7 @@ def convert_toggl_export(toggl_export, outfile):
 
 
 def main():
+    """Run the toggl-exporter"""
     parser = argparse.ArgumentParser()
     parser.add_argument('toggle_export_csv', type=str, help='The name of the toggl csv')
     parser.add_argument('processed_csv', nargs='?', type=str, default='out.csv',
