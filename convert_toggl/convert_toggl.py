@@ -1,8 +1,24 @@
 """Convert toggle exports, optionally by project"""
-import pandas as pd
 import argparse
+import os
 
-myname = 'Ryan Martin'
+import pandas as pd
+
+
+def set_name(name):
+    """Set ``name`` to disk"""
+    with open(os.path.join(os.path.dirname(__file__), 'name.txt'), 'w') as fh:
+        fh.write(name.strip())
+
+
+def get_name():
+    """Get a name from the stored file"""
+    try:
+        with open(os.path.join(os.path.dirname(__file__), 'name.txt'), 'r') as fh:
+            return fh.read().strip()
+    except Exception:
+        set_name("MY NAME")
+        return "MY NAME"
 
 
 def round_to_nearest_15(value):
@@ -15,6 +31,7 @@ def convert_merge_time_entries(df: pd.DataFrame):
     """Get each time entry, merge ead day and round"""
     df['Duration'] = df['Duration'].apply(pd.Timedelta)
     data = []
+    myname = get_name()
     for date in sorted(set(df['Start date'])):
         dfslice = df.loc[df['Start date'] == date]
         hours_worked = round_to_nearest_15(dfslice['Duration'].sum())
@@ -41,11 +58,19 @@ def convert_toggl_export(toggl_export, outfile):
 def main():
     """Run the toggl-exporter"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('toggle_export_csv', type=str, help='The name of the toggl csv')
+    parser.add_argument('toggle_export_csv', nargs='?', type=str,
+                        help='The name of the toggl csv')
     parser.add_argument('processed_csv', nargs='?', type=str, default='out.csv',
                         help='The output csv file')
+    parser.add_argument('-name', type=str, nargs='?', default=None,
+                        help='Set a default name with "MY NAME"')
+    parser.add_argument('-to-pdf', action='store_true', help='Export a formatted pdf')
     args = parser.parse_args()
-    convert_toggl_export(args.toggle_export_csv, args.processed_csv)
+    if args.name:
+        print(f"Setting ``NAME`` == '{args.name}'")
+        set_name(args.name)
+    else:
+        convert_toggl_export(args.toggle_export_csv, args.processed_csv)
 
 
 if __name__ == '__main__':

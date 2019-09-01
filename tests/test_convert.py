@@ -13,5 +13,6 @@ def test_rounding():
 def test_convert_export():
     df = pd.read_csv('./toggl-export.csv')
     converted = convert_toggl.convert_merge_time_entries(df)
-    assert all(c in converted.columns for c in ['Date', 'Employee', 'Hours', 'Unrounded_hours',
+    assert all(c in converted.columns for c in ['Date', 'Employee', 'Hours',
+                                                'Unrounded_hours',
                                                 'Description'])
