@@ -79,13 +79,15 @@ def convert_toggl_export(toggl_export, outfile, topdf=False):
             out_table = convert_merge_time_entries(subdf)
             out_table.to_csv(f'{projectid.lower()}-{outfile}', index=False)
             if topdf:
-                save_table(out_table, f'{projectid.lower()}-{outfile}.pdf',
+                save_table(out_table,
+                           f'{projectid.lower()}-{outfile}'.replace('.csv', '.pdf'),
                            project=projectid)
     else:
         out_table = convert_merge_time_entries(df)
         out_table.to_csv(outfile, index=False)
         if topdf:
-            save_table(out_table, f'{projectid.lower()}-{outfile}.pdf')
+            save_table(out_table,
+                       f'{projectid.lower()}-{outfile}'.replace('.csv', '.pdf'))
 
 
 def main():
