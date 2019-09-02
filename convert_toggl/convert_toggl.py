@@ -20,7 +20,7 @@ def save_table(data: pd.DataFrame, outfile, name=None, project=None):
         table_title = f'{name} - Hours - {project}'
     else:
         table_title = f'{name} - Hours'
-    data = data[['Date', 'Employee', 'Hours', 'Description']]
+    data = data[['Date', 'Employee', 'Hours', 'Description']].sort_values('Date')
     html_table = data.to_html(index=False, float_format='%.2f',
                               justify='left')
     template_vars = {'title': 'Time Sheet',
@@ -65,8 +65,10 @@ def convert_merge_time_entries(df: pd.DataFrame):
         tasks = ', '.join([task for task in set(dfslice['Description'])]).capitalize()
         data.append([date, myname, hours_worked.total_seconds() / 3600,
                      unrounded_hours.total_seconds() / 3600, tasks])
-    return pd.DataFrame(data, columns=['Date', 'Employee', 'Hours', 'Unrounded_hours',
-                                       'Description'])
+    df = pd.DataFrame(data, columns=['Date', 'Employee', 'Hours', 'Unrounded_hours',
+                                     'Description'])
+    df['Date'] = pd.to_datetime(df['Date'])
+    return df.sort_values('Date')
 
 
 def convert_toggl_export(toggl_export, outfile, topdf=False):
