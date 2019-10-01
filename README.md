@@ -8,6 +8,9 @@ Installation:
 
 2. If exporting pdf's, follow instructions for [WeazyPrint](https://weasyprint.readthedocs.io/en/latest/install.html#windows).
 
+    * `pip install weasyprint`
+    * [install GTK3](https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases)
+
 3. Install to local python distribution:
 
         > python setup.py install

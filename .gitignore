@@ -105,3 +105,5 @@ venv.bak/
 tests/proj2-out.csv
 convert_toggl/name.txt
 tests/proj1-out.csv
+
+*.sublime-workspace
