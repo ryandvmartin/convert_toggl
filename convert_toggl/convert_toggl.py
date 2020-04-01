@@ -3,7 +3,7 @@ import argparse
 import os
 
 import pandas as pd
-pd.set_option('display.max_colwidth', -1)
+pd.set_option('display.max_colwidth', None)
 
 THISDIR = os.path.abspath(os.path.dirname(__file__))
 
