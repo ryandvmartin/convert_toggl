@@ -5,30 +5,10 @@ import os
 import pandas as pd
 pd.set_option('display.max_colwidth', None)
 
+import xlsxwriter
+
+
 THISDIR = os.path.abspath(os.path.dirname(__file__))
-
-
-def save_table(data: pd.DataFrame, outfile, name=None, project=None):
-    """Render a table to pdf using jinja2 templates"""
-    from jinja2 import Environment, FileSystemLoader
-    from weasyprint import HTML
-    env = Environment(loader=FileSystemLoader(THISDIR))
-    template = env.get_template('table_template.html')
-    if name is None:
-        name = get_name()
-    if project:
-        table_title = f'{name} - Hours - {project}'
-    else:
-        table_title = f'{name} - Hours'
-    data = data[['Date', 'Employee', 'Hours', 'Description']].sort_values('Date')
-    html_table = data.to_html(index=False, float_format='%.2f',
-                              justify='left')
-    template_vars = {'title': 'Time Sheet',
-                     'table_title': table_title,
-                     'hours_table': html_table}
-    html_out = template.render(template_vars)
-    HTML(string=html_out).write_pdf(outfile, stylesheets=[
-        os.path.join(THISDIR, 'style.css')])
 
 
 def set_name(name):
@@ -65,33 +45,97 @@ def convert_merge_time_entries(df: pd.DataFrame):
         tasks = ', '.join([task for task in set(dfslice['Description'])]).capitalize()
         data.append([date, myname, hours_worked.total_seconds() / 3600,
                      unrounded_hours.total_seconds() / 3600, tasks])
-    df = pd.DataFrame(data, columns=['Date', 'Employee', 'Hours', 'Unrounded_hours',
+    df = pd.DataFrame(data, columns=['Date', 'Employee', 'Hours', 'Unrounded Hours',
                                      'Description'])
     df['Date'] = pd.to_datetime(df['Date'])
     return df.sort_values('Date')
 
 
-def convert_toggl_export(toggl_export, outfile, topdf=False):
+def get_all_tables(all_toggl_df):
+    """Get a dictionary of id: table"""
+    tables = {}
+    if 'project' in [c.lower() for c in all_toggl_df.columns]:
+        for projectid, subdf in list(all_toggl_df.groupby('Project')):
+            out_table = convert_merge_time_entries(subdf)
+            tables[projectid] = out_table
+    else:
+        out_table = convert_merge_time_entries(all_toggl_df)
+        tables[None] = out_table
+    return tables
+
+
+def write_sectioned_xlsx(tables, outfile):  # noqa
+    """Export tables to a single excel file"""
+    wb = xlsxwriter.Workbook(outfile.replace("csv", 'xlsx'))
+    sheet = wb.add_worksheet()
+    header = wb.add_format({'bold': True, "font_color": "blue", "font_size": 15})
+    bold = wb.add_format({'bold': True})
+    base = wb.add_format({"align": "center",
+                          "valign": "vcenter",
+                          "num_format": "#,##0.00"})
+    date = wb.add_format(
+        {"num_format": "dd/mm/yyyy", "align": "center", "valign": "vcenter"})
+    wrap = wb.add_format({"align": "left", "valign": "vcenter", "text_wrap": True})
+    widths = [12, 12, 8, 17, 90]
+    for icol, width in enumerate(widths):
+        sheet.set_column(icol, icol, width)
+    irow = 0
+    total_hours = 0.0
+    total_unrounded = 0.0
+    for pid, df in tables.items():
+        sheet.write(irow, 0, pid, header)
+        irow += 1
+        for icol, col in enumerate(df.columns):
+            sheet.write(irow, icol, col, bold)
+        irow += 1
+        for irow_table in range(len(df)):
+            for icol, col in enumerate(df.columns):
+                if col == "Date":
+                    fmt = date
+                elif col == "Description":
+                    fmt = wrap
+                elif "hours" in col.lower():
+                    fmt = base
+                else:
+                    fmt = wb.add_format({"align": "center", "valign": "vcenter"})
+                val = df.loc[irow_table, col]
+                sheet.write(irow, icol, val, fmt)
+            irow += 1
+        sheet.write(irow, 1, "Total:", wb.add_format({"bold": True, "align": "right"}))
+        fmt = wb.add_format({"align": "center", "valign": "vcenter"})
+        total_hours += df["Hours"].sum()
+        sheet.write(irow, 2, df["Hours"].sum(), base)
+        total_unrounded += df["Unrounded Hours"].sum()
+        sheet.write(irow, 3, df["Unrounded Hours"].sum(), base)
+        irow += 3
+
+    sheet.write(irow, 1, "Monthly Total:", wb.add_format(
+        {"bold": True, "align": "right"}))
+    sheet.write(irow, 2, total_hours, base)
+    sheet.write(irow, 3, total_unrounded, base)
+
+    wb.close()
+
+
+def write_csvs(tables, outfile):
+    """Export csv tables"""
+    for pid, df in tables.items():
+        prefix = '' if pid is None else pid.lower() + '-'
+        df.to_csv(f'{prefix}{outfile}', index=False)
+
+
+def convert_toggl_export(toggl_export, outfile, xlsx=False):
     """Read through an exported toggle file and save by project"""
     df = pd.read_csv(toggl_export)
-    if 'project' in [c.lower() for c in df.columns]:
-        for projectid, subdf in list(df.groupby('Project')):
-            out_table = convert_merge_time_entries(subdf)
-            out_table.to_csv(f'{projectid.lower()}-{outfile}', index=False)
-            if topdf:
-                save_table(out_table,
-                           f'{projectid.lower()}-{outfile}'.replace('.csv', '.pdf'),
-                           project=projectid)
+    tables = get_all_tables(df)
+    if xlsx:
+        write_sectioned_xlsx(tables, outfile)
     else:
-        out_table = convert_merge_time_entries(df)
-        out_table.to_csv(outfile, index=False)
-        if topdf:
-            save_table(out_table,
-                       f'{projectid.lower()}-{outfile}'.replace('.csv', '.pdf'))
+        write_csvs(tables, outfile)
 
 
 def main():
-    """Run the toggl-exporter"""
+    """Run the toggl - exporter"""
     parser = argparse.ArgumentParser()
     parser.add_argument('toggle_export_csv', nargs='?', type=str,
                         help='The name of the toggl csv')
@@ -99,13 +143,14 @@ def main():
                         help='The output csv file')
     parser.add_argument('-name', type=str, nargs='?', default=None,
                         help='Set a default name with "MY NAME"')
-    parser.add_argument('-topdf', action='store_true', help='Export a formatted pdf')
+    parser.add_argument('-xlsx', action='store_true',
+                        help='Export a sectioned excel file')
     args = parser.parse_args()
     if args.name:
         print(f"Setting ``NAME`` == '{args.name}'")
         set_name(args.name)
     else:
-        convert_toggl_export(args.toggle_export_csv, args.processed_csv, args.topdf)
+        convert_toggl_export(args.toggle_export_csv, args.processed_csv, args.xlsx)
 
 
 if __name__ == '__main__':
