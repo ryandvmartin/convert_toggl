@@ -81,7 +81,7 @@ def write_sectioned_xlsx(tables, outfile):  # noqa
                                "bold": True,
                                "num_format": "#,##0.00"})
     date = wb.add_format(
-        {"num_format": "dd/mm/yyyy", "align": "center", "valign": "vcenter"})
+        {"num_format": "yyyy/mm/dd", "align": "center", "valign": "vcenter"})
     wrap = wb.add_format({"align": "left", "valign": "vcenter", "text_wrap": True})
     widths = [12, 12, 8, 17, 90]
     for icol, width in enumerate(widths):
