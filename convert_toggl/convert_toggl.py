@@ -69,10 +69,17 @@ def write_sectioned_xlsx(tables, outfile):  # noqa
     wb = xlsxwriter.Workbook(outfile.replace("csv", 'xlsx'))
     sheet = wb.add_worksheet()
     header = wb.add_format({'bold': True, "font_color": "blue", "font_size": 15})
-    bold = wb.add_format({'bold': True})
+    table_header = wb.add_format({'bold': True, "top": False, "bottom": True})
+    table_footer = wb.add_format({'bold': True, "top": True, "align": "center",
+                                  "valign": "vcenter",
+                                  "num_format": "#,##0.00"})
     base = wb.add_format({"align": "center",
                           "valign": "vcenter",
                           "num_format": "#,##0.00"})
+    bold_base = wb.add_format({"align": "center",
+                               "valign": "vcenter",
+                               "bold": True,
+                               "num_format": "#,##0.00"})
     date = wb.add_format(
         {"num_format": "dd/mm/yyyy", "align": "center", "valign": "vcenter"})
     wrap = wb.add_format({"align": "left", "valign": "vcenter", "text_wrap": True})
@@ -86,7 +93,7 @@ def write_sectioned_xlsx(tables, outfile):  # noqa
         sheet.write(irow, 0, pid, header)
         irow += 1
         for icol, col in enumerate(df.columns):
-            sheet.write(irow, icol, col, bold)
+            sheet.write(irow, icol, col, table_header)
         irow += 1
         for irow_table in range(len(df)):
             for icol, col in enumerate(df.columns):
@@ -101,19 +108,20 @@ def write_sectioned_xlsx(tables, outfile):  # noqa
                 val = df.loc[irow_table, col]
                 sheet.write(irow, icol, val, fmt)
             irow += 1
-        sheet.write(irow, 1, "Total:", wb.add_format({"bold": True, "align": "right"}))
-        fmt = wb.add_format({"align": "center", "valign": "vcenter"})
+        for icol in [0, 4]:
+            sheet.write(irow, icol, " ", table_footer)
+        sheet.write(irow, 1, "Total:", wb.add_format(
+            {"bold": True, "align": "right", "top": True}))
         total_hours += df["Hours"].sum()
-        sheet.write(irow, 2, df["Hours"].sum(), base)
+        sheet.write(irow, 2, df["Hours"].sum(), table_footer)
         total_unrounded += df["Unrounded Hours"].sum()
-        sheet.write(irow, 3, df["Unrounded Hours"].sum(), base)
+        sheet.write(irow, 3, df["Unrounded Hours"].sum(), table_footer)
         irow += 3
-
     sheet.write(irow, 1, "Monthly Total:", wb.add_format(
         {"bold": True, "align": "right"}))
-    sheet.write(irow, 2, total_hours, base)
-    sheet.write(irow, 3, total_unrounded, base)
-
+    sheet.write(irow, 2, total_hours, bold_base)
+    sheet.write(irow, 3, total_unrounded, bold_base)
+    sheet.fit_to_pages(1, 2)
     wb.close()
 
 
