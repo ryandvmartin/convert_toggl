@@ -42,7 +42,7 @@ def convert_merge_time_entries(df: pd.DataFrame):
         dfslice = df.loc[df['Start date'] == date]
         hours_worked = round_to_nearest_15(dfslice['Duration'].sum())
         unrounded_hours = dfslice['Duration'].sum()
-        tasks = ', '.join([task for task in set(dfslice['Description'])]).capitalize()
+        tasks = ', '.join([task for task in set(dfslice['Description'])])
         data.append([date, myname, hours_worked.total_seconds() / 3600,
                      unrounded_hours.total_seconds() / 3600, tasks])
     df = pd.DataFrame(data, columns=['Date', 'Employee', 'Hours', 'Unrounded Hours',
