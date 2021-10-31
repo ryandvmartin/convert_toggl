@@ -134,6 +134,8 @@ def write_csvs(tables, outfile):
 
 def convert_toggl_export(toggl_export, outfile, xlsx=False):
     """Read through an exported toggle file and save by project"""
+    if outfile.endswith("xls") or outfile.endswith("xlsx"):
+        xlsx = True
     df = pd.read_csv(toggl_export)
     tables = get_all_tables(df)
     if xlsx:
