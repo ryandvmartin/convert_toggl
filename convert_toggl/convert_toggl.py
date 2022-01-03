@@ -5,8 +5,6 @@ import os
 import pandas as pd
 pd.set_option('display.max_colwidth', None)
 
-import xlsxwriter
-
 
 THISDIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -66,6 +64,7 @@ def get_all_tables(all_toggl_df):
 
 def write_sectioned_xlsx(tables, outfile):  # noqa
     """Export tables to a single excel file"""
+    import xlsxwriter
     wb = xlsxwriter.Workbook(outfile.replace("csv", 'xlsx'))
     sheet = wb.add_worksheet()
     header = wb.add_format({'bold': True, "font_color": "blue", "font_size": 15})
