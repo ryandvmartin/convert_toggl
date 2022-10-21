@@ -14,7 +14,7 @@ Installation:
 
 2. Configure your name for the exported reports:
 
-    > convert_toggl -name "Ryan Martin"
+    > convert_toggl -name "My Name"
 
 3. From toggle `Reports`, export a csv from the `Detailed` tab for a given date range.
 
