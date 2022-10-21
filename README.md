@@ -16,7 +16,7 @@ Installation:
 
     > convert_toggl -name "My Name"
 
-3. From toggle `Reports`, export a csv from the `Detailed` tab for a given date range.
+3. From the toggl web interface, go to `Reports`, export a csv from the `Detailed` tab for a given date range.
 
 4. Export a ``.csv`` from the detailed summary, e.g., for last month:
 
