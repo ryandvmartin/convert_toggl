@@ -4,14 +4,7 @@ Utility to process ``toggl`` csv output into timesheets. Collects multiple entri
 
 Installation:
 
-1. Clone Repo
-
-2. If exporting pdf's, follow instructions for [WeazyPrint](https://weasyprint.readthedocs.io/en/latest/install.html#windows).
-
-    * `pip install weasyprint`
-    * [install GTK3](https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases)
-
-3. Install to local python distribution:
+1. Clone and install to local python distribution:
 
         > python setup.py install
 
@@ -19,16 +12,16 @@ Installation:
 
         > pip install -e .
 
-4. Configure your name for the exported reports:
+2. Configure your name for the exported reports:
 
-    > convert_toggl -name "Ryan Martin"
+    > convert_toggl -name "My Name"
 
-5. Export a ``.csv`` from the detailed summary, e.g., for last month
+3. From the toggl web interface, go to `Reports`, export a csv from the `Detailed` tab for a given date range.
 
-    Usage:
+4. Export a ``.csv`` from the detailed summary, e.g., for last month:
 
-        > convert_toggl detailed_toggl_export.csv
+    > convert_toggl detailed_toggl_export.csv
 
-    Optionally, with a set of pdf's:
+5. Export a ``.xlsx`` from the detailed summary (requires `pip install xlsxwriter`):
 
-        > convert_toggl -topdf detailed_toggl_export.csv
+    > convert_toggl detailed_toggl_export.csv TimeSheets.xlsx
