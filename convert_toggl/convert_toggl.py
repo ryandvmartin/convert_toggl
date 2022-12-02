@@ -30,7 +30,10 @@ def get_name():
 
 
 def round_to_nearest_15(value):
-    """Round the value to the nearest 15 minutes, eg. 3:17 -> 3:15,  3:22 -> 3:25"""
+    """Round the value to the nearest 15 minutes
+
+    eg. 3h:17m->3h:15m,  3.28hr -> 3.25hr
+    """
     step = pd.Timedelta("00:15:00")
     return step * round(pd.Timedelta(value) / step)
 
@@ -42,8 +45,8 @@ def convert_merge_time_entries(df: pd.DataFrame):
     myname = get_name()
     for date in sorted(set(df["Start date"])):
         dfslice = df.loc[df["Start date"] == date]
-        hours_worked = round_to_nearest_15(dfslice["Duration"].sum())
         unrounded_hours = dfslice["Duration"].sum()
+        hours_worked = round_to_nearest_15(unrounded_hours)
         tasks = ", ".join([task for task in set(dfslice["Description"])])
         data.append(
             [
@@ -58,7 +61,7 @@ def convert_merge_time_entries(df: pd.DataFrame):
         data, columns=["Date", "Employee", "Hours", "Unrounded Hours", "Description"]
     )
     df["Date"] = pd.to_datetime(df["Date"])
-    return df.sort_values("Date")
+    return df.sort_values("Date").reset_index(drop=True)
 
 
 def get_all_tables(all_toggl_df):
@@ -113,6 +116,7 @@ def write_sectioned_xlsx(tables, outfile):  # noqa
         for icol, col in enumerate(df.columns):
             sheet.write(irow, icol, col, table_header)
         irow += 1
+        df = df.sort_values("Date")
         for irow_table in range(len(df)):
             for icol, col in enumerate(df.columns):
                 if col == "Date":
