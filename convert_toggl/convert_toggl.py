@@ -83,6 +83,7 @@ def write_sectioned_xlsx(tables, outfile):  # noqa
 
     wb = xlsxwriter.Workbook(outfile.replace("csv", "xlsx"))
     sheet = wb.add_worksheet()
+    sheet.set_landscape()
     header = wb.add_format({"bold": True, "font_color": "blue", "font_size": 15})
     table_header = wb.add_format({"bold": True, "top": False, "bottom": True})
     table_footer = wb.add_format(
@@ -148,7 +149,6 @@ def write_sectioned_xlsx(tables, outfile):  # noqa
     )
     sheet.write(irow, 2, total_hours, bold_base)
     sheet.write(irow, 3, total_unrounded, bold_base)
-    sheet.set_landscape()
     sheet.fit_to_pages(1, 2)
     wb.close()
 
